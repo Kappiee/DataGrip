@@ -1,0 +1,33 @@
+select hs_t1,hs_t2,HS_T3,HS_T4,HS_HOUR from innovator.HS_PROCESS_LIST
+where id = 'FAA2CBC4F73E486C8B2532639EB62453'
+
+
+
+
+--更新MPart的生命周期
+update innovator.HS_PROCESS_MATERIAL
+set CURRENT_STATE = '8478CF9C4C1440189AA5D5069A97A76B'
+where id in ('C4CA2E887A73465E9525C17FA1E7EE2F','B1127EB4F84D497780C9C1FBF1FF2D0C');
+
+update innovator.hs_process_card
+set CURRENT_STATE = 'C2661A68FD3F429088B95B89A86A27D2'
+where id in (
+--查询需要更新
+select MPart.HS_PROCESS_CARD
+from innovator.HS_PROCESS_MATERIAL MPart
+where MPart.id in
+('C4CA2E887A73465E9525C17FA1E7EE2F','B1127EB4F84D497780C9C1FBF1FF2D0C')
+);
+
+--更新标准卡的生命周期
+update innovator.hs_standard_process
+set CURRENT_STATE = '5F3FDC297B634710B88BB1DAF12B6EEC'
+where id in (
+--查询需要更新
+select Standard.RELATED_ID
+from innovator.HS_PROCESS_MATERIAL MPart
+join innovator.HS_PROCESS_CARD Card on Card.id = MPart.HS_PROCESS_CARD
+join innovator.HS_PROCESS_CARD_REL_PROCESS Standard on Standard.SOURCE_ID = Card.id
+where MPart.id in
+('C4CA2E887A73465E9525C17FA1E7EE2F','B1127EB4F84D497780C9C1FBF1FF2D0C')
+)

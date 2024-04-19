@@ -5,5 +5,5 @@ select
     P.COLUMN_WIDTH                                Width
 from innovator.PROPERTY P
 left join innovator.ITEMTYPE I on P.SOURCE_ID = I.ID
-where I.NAME = 'hs_process_material' and P.IS_HIDDEN2 = 0
+where (I.NAME = 'hs_process_material' or I.NAME = 'hs_mbom')  and P.IS_HIDDEN2 = 0
 order by SORT_ORDER;
