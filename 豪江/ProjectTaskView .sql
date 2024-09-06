@@ -1,16 +1,4 @@
--- 检查并删除表
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[innovator].[Project_Activity_Task]') AND type = N'U')
-BEGIN
-    DROP TABLE [innovator].[Project_Activity_Task];
-END
--- 检查并删除视图
-IF EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[innovator].[Project_Activity_Task]') AND type = N'V')
-BEGIN
-    DROP VIEW [innovator].[project_activity_task];
-END
-
--- 创建视图
-CREATE VIEW [project_activity_task] AS
+--CREATE VIEW [project_activity_task] AS
 
 SELECT aid.id,
        aid.rollup_lead_identity   AS ASSIGNED_TO,
@@ -26,9 +14,19 @@ SELECT aid.id,
        it_p.ID                    AS CONTAINER_TYPE_ID,
        CASE
            WHEN a.STATE = N'Active' THEN N'待办'
-           WHEN (p.STATE = N'Closed') OR
-                ((p.STATE = N'Active') AND (a.STATE = N'Complete')) THEN N'已办'
+           WHEN (a.STATE = N'Released') THEN N'已办'
            ELSE N'其他' END       AS STATUS,
+       is_mine = '0',
+       is_waiting = 
+               CASE
+                 WHEN a.STATE = N'Active' THEN '1'
+                 ELSE '0'
+               END,
+        is_done = 
+               CASE
+                  WHEN (a.STATE = N'Released') THEN '1'
+                 ELSE '0'
+               END,
        a.CLASSIFICATION,
        a.KEYED_NAME,
        a.CREATED_ON,
@@ -52,7 +50,8 @@ SELECT aid.id,
        a.PERMISSION_ID,
        a.TEAM_ID,
        it2.OPEN_ICON              AS icon,
-       CONVERT(NVARCHAR(3), NULL) AS language_code_filter
+       CONVERT(NVARCHAR(3), NULL) AS language_code_filter,
+       a.rollup_date_due_act AS CLOSED_DATE
 FROM innovator.PROJECTACTIVITY AS a
          INNER JOIN innovator.ALIAS AS als ON a.CREATED_BY_ID = als.SOURCE_ID
          INNER JOIN
@@ -70,8 +69,8 @@ FROM innovator.PROJECTACTIVITY AS a
                  tmp_aa.RELATED_ID,
                  tmp_aa.LOCKED_BY_ID,
                  tmp_aa.SOURCE_ID                                                                           AS actid,
-                 IIF(tmp_aa.STATE = 'Complete', tmp_aa.STATE, tmp_a.STATE)                                  AS STATE,
-                 IIF(tmp_aa.STATE = 'Complete', tmp_aa.CURRENT_STATE, tmp_a.CURRENT_STATE) AS CURRENT_STATE
+                 tmp_a.STATE                                AS STATE,
+                 tmp_a.CURRENT_STATE AS CURRENT_STATE
           FROM innovator.PA_Rel_Assignment AS tmp_aa
                    INNER JOIN
                innovator.PROJECTACTIVITY AS tmp_a ON tmp_a.id = tmp_aa.SOURCE_ID
@@ -79,9 +78,8 @@ FROM innovator.PROJECTACTIVITY AS a
 
       ) AS aid ON a.id = aid.actid
          INNER JOIN
-     innovator.PROJECT AS p ON (p.STATE = N'Active' OR
-                                p.STATE = N'Closed') AND (a.PROJ_NUM = Cast(p.PROJECT_NUMBER as varchar(50)) or
-                                                          a.PROJ_NUM = Cast(p.id as varchar(50))) AND
+     innovator.PROJECT AS p ON a.PROJ_NUM = Cast(p.PROJECT_NUMBER as varchar(50)) or
+                                                          a.PROJ_NUM = Cast(p.id as varchar(50)) AND
                                p.IS_CURRENT = '1'
          LEFT OUTER JOIN
      (SELECT id, SOURCE_ID, RELATED_ID
@@ -99,5 +97,6 @@ FROM innovator.PROJECTACTIVITY AS a
          INNER JOIN
      innovator.ITEMTYPE AS it2 ON it2.NAME = N'Project Task'
 WHERE (a.IS_CURRENT = '1')
+
 
 

@@ -35,7 +35,7 @@ SELECT aid.id,
        a.GENERATION,
        a.NEW_VERSION,
        a.CONFIG_ID,
-       a.PERMISSION_ID,
+       --a.PERMISSION_ID,
        a.TEAM_ID,
        it2.OPEN_ICON              AS icon,
        CONVERT(NVARCHAR(3), NULL) AS language_code_filter

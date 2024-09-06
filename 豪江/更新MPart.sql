@@ -1,0 +1,56 @@
+MERGE INTO innovator.HS_PROCESS_MATERIAL AS Target
+USING (VALUES (@hs_part, @hs_number, @hs_process_card, @hs_color,
+               @hs_picture, @hs_sw_version, @hs_use, @hs_property, @hs_model,
+               @hs_workstation, @hs_torque, @hs_update_description, @hs_comments, @id, @config_id, @keyed_name,
+               @created_on, @modified_on, @is_current, @major_rev, @is_released, @not_lockable, @generation,
+               @modified_by_id, @created_by_id, @permission_id, @current_state)) AS Source (hs_part,
+                                                                                             hs_number,
+                                                                                             hs_process_card,
+                                                                                             hs_color,
+                                                                                             hs_picture                        ,
+                                                                                             hs_sw_version,
+                                                                                             hs_use,
+                                                                                             hs_property,
+                                                                                             hs_model,
+                                                                                             hs_workstation, hs_torque,
+                                                                                             hs_update_description,
+                                                                                             hs_comments                  ,
+                                                                                             id, config_id, keyed_name,
+                                                                                             created_on, modified_on,
+                                                                                             is_current, major_rev,
+                                                                                                            is_released,
+                                                                                             not_lockable, generation,
+                                                                                             modified_by_id,
+                                                                                             created_by_id,
+                                                                                             permission_id,
+                                                                                             current_state) 
+ON Target.hs_number = Source.hs_number
+WHEN MATCHED THEN 
+    UPDATE 
+    SET
+         target.hs_part                  = Source.hs_part,
+         target.hs_process_card          = Source.hs_process_card,
+         target.KEYED_NAME               = Source.KEYED_NAME,
+         target.hs_color           = Source.hs_color,
+         target.hs_picture          = Source.hs_picture,
+         target.hs_sw_version      = Source.hs_sw_version,
+         target.hs_use      = Source.hs_use,
+         target.hs_property    = Source.hs_property,
+         target.hs_model           = Source.hs_model,
+         target.hs_workstation           = Source.hs_workstation,
+         target.hs_torque                = Source.hs_torque,
+         target.hs_update_description         = Source.hs_update_description,
+         target.hs_comments           = Source.hs_comments
+WHEN NOT MATCHED THEN 
+    INSERT (hs_part, hs_number, hs_process_card, hs_color,
+            hs_picture, hs_sw_version, hs_use, hs_property, hs_model,
+            hs_workstation, hs_torque, hs_update_description, hs_comments, id, config_id, keyed_name, created_on,
+            modified_on, is_current, major_rev,  is_released, not_lockable, generation, modified_by_id, created_by_id,
+            permission_id, current_state) 
+    VALUES (Source.hs_part, Source.hs_number, Source.hs_process_card,
+            Source.hs_color, Source.hs_picture, Source.hs_sw_version,
+            Source.hs_use, Source.hs_property, Source.hs_model, Source.hs_workstation,
+            Source.hs_torque, Source.hs_update_description, Source.hs_comments, Source.id, Source.config_id,
+            Source.keyed_name, Source.created_on, Source.modified_on, Source.is_current, Source.major_rev, 
+            Source.is_released, Source.not_lockable, Source.generation, Source.modified_by_id, Source.created_by_id,
+            Source.permission_id, Source.current_state);
