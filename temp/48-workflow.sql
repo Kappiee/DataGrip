@@ -1,15 +1,11 @@
 CREATE VIEW [Workflow_Task_Step02_Create_Tmp_View]
 AS
-    SELECT act_asgn.ID,
+  SELECT act_asgn.ID,
          act_asgn.RELATED_ID                                             AS ASSIGNED_TO,
          wfl.SOURCE_ID                                                   AS ITEM,
          wfl.SOURCE_TYPE                                                 AS ITEM_TYPE_ID,
 		 CASE WHEN lang.CODE='en' THEN t.label_plural
-               WHEN lang.CODE='zh' THEN t.label_plural_zc END            AS formName,
-         ''                                                              AS hs_number,
-         ''                                                              AS p_number,
-         ''                                                              AS Hs_Name,
-         act.id                                                              AS task_id,
+                   WHEN lang.CODE='zh' THEN t.label_plural_zc END  AS formName,
          act.ACTIVE_DATE                                                 AS START_DATE,
          Dateadd(day, Isnull(act.EXPECTED_DURATION, 0), act.ACTIVE_DATE) AS DUE_DATE,
          COALESCE(CASE WHEN lang.CODE='en' THEN act.MESSAGE END, act.MESSAGE) AS INSTRUCTIONS,
@@ -21,32 +17,17 @@ AS
          STATUS =
              CASE
                  WHEN (als.related_id = act_asgn.related_id) and (wfl_proc.STATE = N'Active') and (act.STATE = N'Closed') and (wfl_proc.CREATED_BY_ID = act_asgn.created_by_id) THEN '审核中'
-                 WHEN (act.STATE = N'Active') and (act_asgn.path is null or act_asgn.path = '') then N'待办'
-                 WHEN act_asgn.path is not null or act_asgn.path != '' then N'已办'
-                 ELSE N'其他'
+                 WHEN (act.STATE = N'Active') and (act_asgn.path is null or act_asgn.path = '') then '待办'
+                 WHEN act_asgn.path is not null or act_asgn.path != '' then '已办'
+                 ELSE '其他'
              END,
-         is_mine =
-               CASE
-                 WHEN (als.related_id = act_asgn.related_id) and (wfl_proc.CREATED_BY_ID = act_asgn.created_by_id) THEN '1'
-                 ELSE '0'
-               END,
-         is_waiting =
-               CASE
-                 WHEN (act.STATE = N'Active') and (act_asgn.path is null or act_asgn.path = '') then '1'
-                 ELSE '0'
-               END,
-          is_done =
-               CASE
-                 WHEN (act_asgn.path is not null) or (act_asgn.path != '') then '1'
-                 ELSE '0'
-               END,
          act.CLASSIFICATION,
          act.KEYED_NAME,
-         wfl_proc.CREATED_ON,
-         wfl_proc.CREATED_BY_ID,
+         act_asgn.CREATED_ON,
+         act_asgn.CREATED_BY_ID,
          act.OWNED_BY_ID,
          act.MANAGED_BY_ID,
-         act.MODIFIED_ON, --act_asgn.MODIFIED_ON,
+         act_asgn.MODIFIED_ON,
          act_asgn.MODIFIED_BY_ID,
          act.CURRENT_STATE,
          act.STATE,
@@ -63,8 +44,7 @@ AS
          act_asgn.PERMISSION_ID,
          act_asgn.TEAM_ID,
          it2.open_icon                                                   AS icon,
-         lang.code                                                       AS language_code_filter,
-         act.CLOSED_DATE AS CLOSED_DATE
+         lang.code                                                       AS language_code_filter
   FROM   innovator.WORKFLOW AS wfl
          INNER JOIN innovator.WORKFLOW_PROCESS AS wfl_proc
                  ON wfl.RELATED_ID = wfl_proc.ID

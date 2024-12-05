@@ -1,0 +1,1 @@
+select count(*) as quantity from innovator.Part where hs_specification = ''
